@@ -63,8 +63,9 @@ Dự án tập trung vào **UI/UX animation**, **TMDB API 연동**, **LocalStora
 ---
 
 ## ▶️ How to Run
-``
+
 npm install
+
 npm run dev
 
 ---
@@ -73,12 +74,12 @@ npm run dev
 npm run build
 
 
-🌐 Deployment
-GitHub Repository: https://github.com/USERNAME/REPOSITORY_NAME
+## 🌐 Deployment
+GitHub Repository: https://github.com/tranhoang01/wsd-assignment-02.git
 
-GitHub Pages: https://USERNAME.github.io/REPOSITORY_NAME/
+GitHub Pages: https://tranhoang01.github.io/wsd-assignment-02/
 
-🤖 AI Usage
+## 🤖 AI Usage
 GPT를 활용하여:
 
 React 컴포넌트 설계

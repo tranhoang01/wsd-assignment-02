@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import { useAuth } from "../hooks/useAuth";
 import "./SignIn.netflix.css";
-import "./SignIn.upgrade.css";
+import "./SignIn.upgrade.css"; // nếu bạn đã tạo file nâng cấp trước đó
 
 export default function SignIn() {
   const nav = useNavigate();
@@ -37,7 +37,7 @@ export default function SignIn() {
     if (!res.ok) return toast.error(res.msg);
 
     toast.success("회원가입 성공! 로그인 해주세요.");
-    // 요구사항: 회원가입 성공 시 /signin의 로그인 화면이 보이게
+    // 요구사항: 회원가입 성공 시 로그인 화면으로
     setRightActive(false);
     setEmail(rEmail);
     setPw("");
@@ -48,7 +48,7 @@ export default function SignIn() {
       <Toaster position="top-right" />
 
       <div className={`auth-container ${rightActive ? "right-panel-active" : ""}`}>
-        {/* SIGN UP */}
+        {/* ===== DESKTOP LAYOUT (absolute panels) ===== */}
         <div className="form-container sign-up-container">
           <form className="auth-form" onSubmit={(e) => e.preventDefault()}>
             <h1>Create Account</h1>
@@ -70,10 +70,17 @@ export default function SignIn() {
             <button type="button" className="primary" onClick={onRegister}>
               Sign Up
             </button>
+
+            {/* Mobile switch (visible on mobile) */}
+            <div className="mobile-switch">
+              Đã có tài khoản?{" "}
+              <button type="button" onClick={() => setRightActive(false)}>
+                Sign In
+              </button>
+            </div>
           </form>
         </div>
 
-        {/* SIGN IN */}
         <div className="form-container sign-in-container">
           <form className="auth-form" onSubmit={(e) => e.preventDefault()}>
             <h1>Sign in</h1>
@@ -89,10 +96,27 @@ export default function SignIn() {
             <button type="button" className="primary" onClick={onLogin}>
               Sign In
             </button>
+
+            {/* Mobile switch (visible on mobile) */}
+            <div className="mobile-switch">
+              Chưa có tài khoản?{" "}
+              <button type="button" onClick={() => setRightActive(true)}>
+                Sign Up
+              </button>
+            </div>
           </form>
         </div>
 
-        {/* OVERLAY */}
+        {/* ===== MOBILE SLIDER (only works on mobile via CSS) ===== */}
+        {/* The slider is always in DOM; CSS only shows the effect on mobile */}
+        <div className="mobile-slider" aria-hidden>
+          <div className="mobile-panel">
+            {/* clone sign-in visual area (empty on desktop, used on mobile layout) */}
+          </div>
+          <div className="mobile-panel">{/* clone sign-up visual area */}</div>
+        </div>
+
+        {/* ===== OVERLAY (desktop only) ===== */}
         <div className="overlay-container">
           <div className="overlay">
             <div className="overlay-panel overlay-left">

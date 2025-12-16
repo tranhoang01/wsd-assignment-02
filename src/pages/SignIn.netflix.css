@@ -1,4 +1,4 @@
-/* ===== Netflix-style Auth Sliding Panels (FULL: desktop overlay + mobile slide) ===== */
+/* ===== Auth (Desktop Netflix overlay + Mobile in-frame horizontal swap) ===== */
 
 .auth-page {
   min-height: 100vh;
@@ -9,7 +9,8 @@
   padding: 18px;
 }
 
-.auth-container {
+/* ===== Shared card ===== */
+.auth-card {
   position: relative;
   width: min(900px, 100%);
   height: 520px;
@@ -20,45 +21,7 @@
   backdrop-filter: blur(10px);
 }
 
-/* ========== DESKTOP (>= 769px): classic Netflix overlay ========== */
-.form-container {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  width: 50%;
-  transition: transform 0.6s ease-in-out, opacity 0.3s ease-in-out;
-  will-change: transform, opacity;
-}
-
-.sign-in-container {
-  left: 0;
-  z-index: 3;
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.sign-up-container {
-  left: 0;
-  z-index: 1;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.auth-container.right-panel-active .sign-in-container {
-  transform: translateX(100%);
-  opacity: 0;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.auth-container.right-panel-active .sign-up-container {
-  transform: translateX(100%);
-  opacity: 1;
-  z-index: 5;
-  pointer-events: auto;
-}
-
-/* Form style */
+/* ===== Shared form style ===== */
 .auth-form {
   height: 100%;
   display: flex;
@@ -113,7 +76,52 @@
   transform: scale(1.05);
 }
 
-/* Overlay */
+/* =======================
+   DESKTOP LAYOUT
+   ======================= */
+.desktop-auth {
+  display: block;
+  height: 100%;
+}
+
+.form-container {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 50%;
+  transition: transform 0.6s ease-in-out, opacity 0.3s ease-in-out;
+  will-change: transform, opacity;
+}
+
+.sign-in-container {
+  left: 0;
+  z-index: 3;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sign-up-container {
+  left: 0;
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.auth-card.right-panel-active .sign-in-container {
+  transform: translateX(100%);
+  opacity: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.auth-card.right-panel-active .sign-up-container {
+  transform: translateX(100%);
+  opacity: 1;
+  z-index: 5;
+  pointer-events: auto;
+}
+
+/* overlay */
 .overlay-container {
   position: absolute;
   top: 0;
@@ -125,7 +133,7 @@
   z-index: 100;
 }
 
-.auth-container.right-panel-active .overlay-container {
+.auth-card.right-panel-active .overlay-container {
   transform: translateX(-100%);
 }
 
@@ -140,7 +148,7 @@
   transition: transform 0.6s ease-in-out;
 }
 
-.auth-container.right-panel-active .overlay {
+.auth-card.right-panel-active .overlay {
   transform: translateX(50%);
 }
 
@@ -172,7 +180,7 @@
   transition: transform 0.6s ease-in-out;
 }
 
-.auth-container.right-panel-active .overlay-left {
+.auth-card.right-panel-active .overlay-left {
   transform: translateX(0);
 }
 
@@ -182,7 +190,7 @@
   transition: transform 0.6s ease-in-out;
 }
 
-.auth-container.right-panel-active .overlay-right {
+.auth-card.right-panel-active .overlay-right {
   transform: translateX(20%);
 }
 
@@ -202,59 +210,75 @@
   background: rgba(255, 255, 255, 0.12);
 }
 
-/* ========== MOBILE (<= 768px): slide carousel effect ========== */
-@media (max-width: 768px) {
-  .auth-container {
-    height: auto;
-    padding: 0;
-  }
-
-  /* hide overlay on mobile */
-  .overlay-container {
-    display: none;
-  }
-
-  /* turn into slider */
-  .form-container {
-    position: relative;
-    width: 100%;
-    opacity: 1 !important;
-    transform: none !important;
-    pointer-events: auto !important;
-  }
-
-  /* wrapper that slides */
-  .mobile-slider {
-    width: 200%;
-    display: flex;
-    transition: transform 0.55s ease;
-    will-change: transform;
-  }
-
-  .auth-container.right-panel-active .mobile-slider {
-    transform: translateX(-50%);
-  }
-
-  .mobile-panel {
-    width: 50%;
-    padding: 14px 0;
-  }
-
-  /* forms take full width */
-  .auth-form {
-    padding: 0 18px;
-  }
-
-  /* hide desktop absolute behaviors */
-  .sign-in-container,
-  .sign-up-container {
-    left: 0;
-  }
+/* =======================
+   MOBILE LAYOUT (ONE FRAME, HORIZONTAL SWAP)
+   ======================= */
+.mobile-auth {
+  display: none;
+  height: 100%;
 }
 
-/* Mobile switch link (always visible on mobile) */
+.mobile-inner {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow: hidden; /* ✅ giữ trong 1 khung */
+}
+
+.mobile-track {
+  height: 100%;
+  width: 200%;
+  display: flex;
+  transition: transform 0.55s ease;
+  will-change: transform;
+}
+
+.auth-card.right-panel-active .mobile-track {
+  transform: translateX(-50%); /* ✅ trượt sang form signup */
+}
+
+.mobile-panel {
+  width: 50%;
+  height: 100%;
+  display: flex;
+}
+
+.mobile-form {
+  width: 100%;
+  height: 100%;
+  padding: 0 18px; /* mobile padding */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.mobile-form h1 {
+  margin: 0 0 12px;
+  font-weight: 900;
+}
+
+.mobile-form input {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 12px 14px;
+  margin: 8px 0;
+  border-radius: 10px;
+  color: white;
+  outline: none;
+}
+
+.mobile-form button.primary {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 999px;
+  border: none;
+  background: #e50914;
+  color: white;
+  font-weight: 900;
+  cursor: pointer;
+}
+
 .mobile-switch {
-  display: none;
   margin-top: 12px;
   font-size: 13px;
   opacity: 0.95;
@@ -270,8 +294,17 @@
   padding: 0;
 }
 
+/* Breakpoint: show mobile layout, hide desktop layout */
 @media (max-width: 768px) {
-  .mobile-switch {
+  .auth-card {
+    height: 560px; /* giữ 1 khung đủ cao để không bị “kéo xuống” */
+  }
+
+  .desktop-auth {
+    display: none;
+  }
+
+  .mobile-auth {
     display: block;
   }
 }

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import { useAuth } from "../hooks/useAuth";
 import "./SignIn.netflix.css";
-import "./SignIn.upgrade.css"; // nếu bạn đã tạo file nâng cấp trước đó
+import "./SignIn.upgrade.css"; // nếu bạn có file upgrade
 
 export default function SignIn() {
   const nav = useNavigate();
@@ -47,92 +47,140 @@ export default function SignIn() {
     <div className="auth-page">
       <Toaster position="top-right" />
 
-      <div className={`auth-container ${rightActive ? "right-panel-active" : ""}`}>
-        {/* ===== DESKTOP LAYOUT (absolute panels) ===== */}
-        <div className="form-container sign-up-container">
-          <form className="auth-form" onSubmit={(e) => e.preventDefault()}>
-            <h1>Create Account</h1>
+      <div className={`auth-card ${rightActive ? "right-panel-active" : ""}`}>
+        {/* =======================
+            DESKTOP (Netflix overlay)
+           ======================= */}
+        <div className="desktop-auth">
+          {/* SIGN UP */}
+          <div className="form-container sign-up-container">
+            <form className="auth-form" onSubmit={(e) => e.preventDefault()}>
+              <h1>Create Account</h1>
 
-            <input placeholder="Email" value={rEmail} onChange={(e) => setREmail(e.target.value)} />
-            <input type="password" placeholder="Password" value={rPw} onChange={(e) => setRPw(e.target.value)} />
-            <input
-              type="password"
-              placeholder="Confirm Password"
-              value={rPw2}
-              onChange={(e) => setRPw2(e.target.value)}
-            />
+              <input placeholder="Email" value={rEmail} onChange={(e) => setREmail(e.target.value)} />
+              <input type="password" placeholder="Password" value={rPw} onChange={(e) => setRPw(e.target.value)} />
+              <input
+                type="password"
+                placeholder="Confirm Password"
+                value={rPw2}
+                onChange={(e) => setRPw2(e.target.value)}
+              />
 
-            <label className="small-row">
-              <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
-              약관 동의 (필수)
-            </label>
+              <label className="small-row">
+                <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
+                약관 동의 (필수)
+              </label>
 
-            <button type="button" className="primary" onClick={onRegister}>
-              Sign Up
-            </button>
-
-            {/* Mobile switch (visible on mobile) */}
-            <div className="mobile-switch">
-              Đã có tài khoản?{" "}
-              <button type="button" onClick={() => setRightActive(false)}>
-                Sign In
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <div className="form-container sign-in-container">
-          <form className="auth-form" onSubmit={(e) => e.preventDefault()}>
-            <h1>Sign in</h1>
-
-            <input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-            <input type="password" placeholder="Password" value={pw} onChange={(e) => setPw(e.target.value)} />
-
-            <label className="small-row">
-              <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
-              Remember me
-            </label>
-
-            <button type="button" className="primary" onClick={onLogin}>
-              Sign In
-            </button>
-
-            {/* Mobile switch (visible on mobile) */}
-            <div className="mobile-switch">
-              Chưa có tài khoản?{" "}
-              <button type="button" onClick={() => setRightActive(true)}>
+              <button type="button" className="primary" onClick={onRegister}>
                 Sign Up
               </button>
-            </div>
-          </form>
-        </div>
-
-        {/* ===== MOBILE SLIDER (only works on mobile via CSS) ===== */}
-        {/* The slider is always in DOM; CSS only shows the effect on mobile */}
-        <div className="mobile-slider" aria-hidden>
-          <div className="mobile-panel">
-            {/* clone sign-in visual area (empty on desktop, used on mobile layout) */}
+            </form>
           </div>
-          <div className="mobile-panel">{/* clone sign-up visual area */}</div>
-        </div>
 
-        {/* ===== OVERLAY (desktop only) ===== */}
-        <div className="overlay-container">
-          <div className="overlay">
-            <div className="overlay-panel overlay-left">
-              <h1>Welcome Back!</h1>
-              <p>이미 계정이 있나요?</p>
-              <button type="button" className="ghost" onClick={() => setRightActive(false)}>
+          {/* SIGN IN */}
+          <div className="form-container sign-in-container">
+            <form className="auth-form" onSubmit={(e) => e.preventDefault()}>
+              <h1>Sign in</h1>
+
+              <input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <input type="password" placeholder="Password" value={pw} onChange={(e) => setPw(e.target.value)} />
+
+              <label className="small-row">
+                <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+                Remember me
+              </label>
+
+              <button type="button" className="primary" onClick={onLogin}>
                 Sign In
               </button>
-            </div>
+            </form>
+          </div>
 
-            <div className="overlay-panel overlay-right">
-              <h1>Hello, Friend!</h1>
-              <p>아직 계정이 없나요?</p>
-              <button type="button" className="ghost" onClick={() => setRightActive(true)}>
-                Sign Up
-              </button>
+          {/* OVERLAY */}
+          <div className="overlay-container">
+            <div className="overlay">
+              <div className="overlay-panel overlay-left">
+                <h1>Welcome Back!</h1>
+                <p>이미 계정이 있나요?</p>
+                <button type="button" className="ghost" onClick={() => setRightActive(false)}>
+                  Sign In
+                </button>
+              </div>
+
+              <div className="overlay-panel overlay-right">
+                <h1>Hello, Friend!</h1>
+                <p>아직 계정이 없나요?</p>
+                <button type="button" className="ghost" onClick={() => setRightActive(true)}>
+                  Sign Up
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* =======================
+            MOBILE (one frame horizontal swap)
+           ======================= */}
+        <div className="mobile-auth">
+          <div className="mobile-inner">
+            <div className="mobile-track">
+              {/* PANEL 1: SIGN IN */}
+              <div className="mobile-panel">
+                <form className="mobile-form" onSubmit={(e) => e.preventDefault()}>
+                  <h1>Sign in</h1>
+
+                  <input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                  <input type="password" placeholder="Password" value={pw} onChange={(e) => setPw(e.target.value)} />
+
+                  <label className="small-row">
+                    <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+                    Remember me
+                  </label>
+
+                  <button type="button" className="primary" onClick={onLogin}>
+                    Sign In
+                  </button>
+
+                  <div className="mobile-switch">
+                    Chưa có tài khoản?{" "}
+                    <button type="button" onClick={() => setRightActive(true)}>
+                      Sign Up
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* PANEL 2: SIGN UP */}
+              <div className="mobile-panel">
+                <form className="mobile-form" onSubmit={(e) => e.preventDefault()}>
+                  <h1>Create Account</h1>
+
+                  <input placeholder="Email" value={rEmail} onChange={(e) => setREmail(e.target.value)} />
+                  <input type="password" placeholder="Password" value={rPw} onChange={(e) => setRPw(e.target.value)} />
+                  <input
+                    type="password"
+                    placeholder="Confirm Password"
+                    value={rPw2}
+                    onChange={(e) => setRPw2(e.target.value)}
+                  />
+
+                  <label className="small-row">
+                    <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
+                    약관 동의 (필수)
+                  </label>
+
+                  <button type="button" className="primary" onClick={onRegister}>
+                    Sign Up
+                  </button>
+
+                  <div className="mobile-switch">
+                    Đã có tài khoản?{" "}
+                    <button type="button" onClick={() => setRightActive(false)}>
+                      Sign In
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
         </div>

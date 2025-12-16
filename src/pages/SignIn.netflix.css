@@ -1,0 +1,234 @@
+/* ===== Netflix-style Auth Sliding Panels (FIXED) ===== */
+
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(1200px 600px at 10% 10%, rgba(229, 9, 20, 0.25), transparent), #0b0b10;
+  color: #fff;
+  padding: 18px;
+}
+
+.auth-container {
+  position: relative;
+  width: min(900px, 100%);
+  height: 520px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10px);
+}
+
+/* FORM PANELS */
+.form-container {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 50%;
+  transition: transform 0.6s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+/* Default: show SIGN IN */
+.sign-in-container {
+  left: 0;
+  z-index: 3;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sign-up-container {
+  left: 0;
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* REGISTER MODE */
+.auth-container.right-panel-active .sign-in-container {
+  transform: translateX(100%);
+  opacity: 0;
+  z-index: 1;
+  pointer-events: none; /* ✅ 중요: 클릭 막기 */
+}
+
+.auth-container.right-panel-active .sign-up-container {
+  transform: translateX(100%);
+  opacity: 1;
+  z-index: 5;
+  pointer-events: auto; /* ✅ 중요: SignUp만 클릭 가능 */
+}
+
+/* FORM STYLE */
+.auth-form {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 48px;
+}
+
+.auth-form h1 {
+  margin: 0 0 12px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+}
+
+.auth-form input {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 12px 14px;
+  margin: 8px 0;
+  border-radius: 10px;
+  color: white;
+  outline: none;
+}
+
+.auth-form button.primary {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 999px;
+  border: none;
+  background: #e50914;
+  color: white;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+.auth-form button.primary:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.auth-form .small-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+/* OVERLAY */
+.overlay-container {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+  transition: transform 0.6s ease-in-out;
+  z-index: 100;
+  pointer-events: none; /* overlay 자체는 클릭을 panel button만 받게 처리 */
+}
+
+.auth-container.right-panel-active .overlay-container {
+  transform: translateX(-100%);
+}
+
+.overlay {
+  background: linear-gradient(135deg, #e50914, #b20710);
+  color: #fff;
+  position: relative;
+  left: -100%;
+  height: 100%;
+  width: 200%;
+  transform: translateX(0);
+  transition: transform 0.6s ease-in-out;
+}
+
+.auth-container.right-panel-active .overlay {
+  transform: translateX(50%);
+}
+
+.overlay-panel {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 40px;
+  pointer-events: auto; /* ✅ 버튼 클릭 가능 */
+}
+
+.overlay-panel h1 {
+  margin: 0 0 10px;
+  font-weight: 900;
+}
+
+.overlay-panel p {
+  margin: 0;
+  opacity: 0.9;
+}
+
+.overlay-left {
+  transform: translateX(-20%);
+  transition: transform 0.6s ease-in-out;
+}
+
+.auth-container.right-panel-active .overlay-left {
+  transform: translateX(0);
+}
+
+.overlay-right {
+  right: 0;
+  transform: translateX(0);
+  transition: transform 0.6s ease-in-out;
+}
+
+.auth-container.right-panel-active .overlay-right {
+  transform: translateX(20%);
+}
+
+.overlay-panel button.ghost {
+  margin-top: 18px;
+  background: transparent;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  padding: 10px 22px;
+  color: #fff;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+.overlay-panel button.ghost:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .auth-container {
+    height: auto;
+    padding: 10px 0;
+  }
+
+  .overlay-container {
+    display: none;
+  }
+
+  .form-container {
+    position: relative;
+    width: 100%;
+    transform: none !important;
+  }
+
+  .sign-up-container {
+    display: none;
+  }
+
+  .auth-container.right-panel-active .sign-in-container {
+    display: none;
+  }
+
+  .auth-container.right-panel-active .sign-up-container {
+    display: block;
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 5;
+  }
+}

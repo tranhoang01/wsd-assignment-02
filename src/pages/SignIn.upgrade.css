@@ -1,0 +1,155 @@
+/* =====================================================
+   Netflix-style Auth PRO Upgrade (Drop-in CSS)
+   Chỉ cần import thêm file này là xong
+   ===================================================== */
+
+/* ===== Global enhancement ===== */
+.auth-page {
+  animation: fadeIn 0.6s ease both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ===== Container glow + depth ===== */
+.auth-container {
+  box-shadow:
+    0 40px 120px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  transition: box-shadow 0.4s ease, transform 0.4s ease;
+}
+
+.auth-container:hover {
+  box-shadow:
+    0 55px 160px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+/* ===== Inputs: Netflix glow focus ===== */
+.auth-form input {
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.15s ease;
+}
+
+.auth-form input:focus {
+  border-color: rgba(229, 9, 20, 0.8);
+  box-shadow:
+    0 0 0 1px rgba(229, 9, 20, 0.6),
+    0 0 20px rgba(229, 9, 20, 0.25);
+  transform: translateY(-1px);
+}
+
+/* ===== Primary button: Netflix hover ===== */
+.auth-form button.primary {
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-form button.primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255,255,255,0.35),
+    transparent
+  );
+  transform: translateX(-120%);
+  transition: transform 0.6s ease;
+}
+
+.auth-form button.primary:hover::after {
+  transform: translateX(120%);
+}
+
+.auth-form button.primary:active {
+  transform: scale(0.97);
+}
+
+/* ===== Overlay cinematic effect ===== */
+.overlay {
+  background:
+    radial-gradient(
+      1200px 600px at 20% 10%,
+      rgba(255,255,255,0.15),
+      transparent
+    ),
+    linear-gradient(135deg, #e50914, #b20710);
+}
+
+.overlay-panel {
+  text-shadow: 0 8px 30px rgba(0,0,0,0.6);
+}
+
+.overlay-panel h1 {
+  font-size: 36px;
+  letter-spacing: 0.4px;
+}
+
+.overlay-panel p {
+  font-size: 15px;
+  opacity: 0.95;
+  margin-top: 6px;
+}
+
+/* ===== Overlay ghost button ===== */
+.overlay-panel button.ghost {
+  position: relative;
+  overflow: hidden;
+}
+
+.overlay-panel button.ghost::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.12);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.overlay-panel button.ghost:hover::before {
+  opacity: 1;
+}
+
+/* ===== Panel transition smoothing ===== */
+.form-container {
+  will-change: transform, opacity;
+}
+
+/* ===== Title subtle animation ===== */
+.auth-form h1 {
+  animation: titlePop 0.5s ease both;
+}
+
+@keyframes titlePop {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== Checkbox polish ===== */
+.auth-form input[type="checkbox"] {
+  accent-color: #e50914;
+  transform: scale(1.05);
+}
+
+/* ===== Mobile refinement ===== */
+@media (max-width: 768px) {
+  .auth-container {
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+  }
+
+  .auth-form h1 {
+    font-size: 28px;
+  }
+}

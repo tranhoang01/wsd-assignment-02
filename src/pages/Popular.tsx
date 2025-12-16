@@ -194,7 +194,4 @@ const topBtn: React.CSSProperties = {
   cursor: "pointer",
 };
 
-const tableGridMedia = `
-@media (max-width: 1100px){ .__tableGrid{ grid-template-columns: repeat(4, 1fr);} }
-@media (max-width: 720px){ .__tableGrid{ grid-template-columns: repeat(2, 1fr);} }
-`;
+

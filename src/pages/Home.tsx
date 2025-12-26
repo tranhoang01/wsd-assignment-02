@@ -5,15 +5,18 @@ import Loading from "../components/Loading/Loading";
 import MovieCard from "../components/MovieCard/MovieCard";
 import { fetchMovies, tmdbEndpoints } from "../api/tmdb";
 import type { Movie } from "../types/movie";
-import { useWishlist } from "../hooks/useWishlist";
+import type { User } from "firebase/auth";
+import { listenAuth } from "../firebase/auth";
+import { listenWishlist, type WishlistItem } from "../firebase/wishlist";
 
-function Section({ title, movies, onToggle, isWished }: any) {
+
+function Section({ title, movies, isWished }: { title: string; movies: Movie[]; isWished: (id: number) => boolean }) {
   return (
     <section style={{ marginTop: 18 }}>
       <h2 style={{ margin: "8px 0 12px" }}>{title}</h2>
       <div style={grid}>
-        {movies.map((m: Movie) => (
-          <MovieCard key={m.id} movie={m} wished={isWished(m.id)} onToggle={onToggle} />
+        {movies.map((m) => (
+          <MovieCard key={m.id} movie={m} wished={isWished(m.id)} />
         ))}
       </div>
     </section>
@@ -21,13 +24,34 @@ function Section({ title, movies, onToggle, isWished }: any) {
 }
 
 export default function Home() {
-  const { toggle, isWished } = useWishlist();
   const [loading, setLoading] = useState(true);
 
   const [popular, setPopular] = useState<Movie[]>([]);
   const [now, setNow] = useState<Movie[]>([]);
   const [top, setTop] = useState<Movie[]>([]);
   const [up, setUp] = useState<Movie[]>([]);
+
+  // Firebase auth user
+  const [user, setUser] = useState<User | null>(null);
+
+  // Firestore wishlist items
+  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
+
+  useEffect(() => {
+    const unsub = listenAuth(setUser);
+    return unsub;
+  }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setWishlistItems([]);
+      return;
+    }
+    const unsub = listenWishlist(user.uid, setWishlistItems);
+    return unsub;
+  }, [user]);
+
+  const isWished = (movieId: number) => wishlistItems.some((x) => x.movieId === movieId);
 
   useEffect(() => {
     (async () => {
@@ -54,18 +78,20 @@ export default function Home() {
       <Header />
       <main style={main}>
         <h1 style={{ marginTop: 6 }}>Home</h1>
+
         <p style={{ opacity: 0.75, marginTop: 6 }}>
-          포스터 클릭 → Wishlist(추천) 토글. (LocalStorage 저장)
+          포스터 클릭 → Wishlist 토글. (Firebase Firestore 저장){" "}
+          {!user ? <span style={{ opacity: 0.9 }}>※ 로그인 필요</span> : null}
         </p>
 
         {loading ? <Loading label="TMDB에서 영화 불러오는 중..." /> : null}
 
         {!loading ? (
           <>
-            <Section title="Popular" movies={popular} onToggle={toggle} isWished={isWished} />
-            <Section title="Now Playing" movies={now} onToggle={toggle} isWished={isWished} />
-            <Section title="Top Rated" movies={top} onToggle={toggle} isWished={isWished} />
-            <Section title="Upcoming" movies={up} onToggle={toggle} isWished={isWished} />
+            <Section title="Popular" movies={popular} isWished={isWished} />
+            <Section title="Now Playing" movies={now} isWished={isWished} />
+            <Section title="Top Rated" movies={top} isWished={isWished} />
+            <Section title="Upcoming" movies={up} isWished={isWished} />
           </>
         ) : null}
       </main>

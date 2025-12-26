@@ -5,7 +5,9 @@ import Loading from "../components/Loading/Loading";
 import MovieCard from "../components/MovieCard/MovieCard";
 import type { Genre, Movie } from "../types/movie";
 import { discoverMovies, fetchGenres, searchMovies } from "../api/tmdb";
-import { useWishlist } from "../hooks/useWishlist";
+import type { User } from "firebase/auth";
+import { listenAuth } from "../firebase/auth";
+import { listenWishlist, type WishlistItem } from "../firebase/wishlist";
 
 const FALLBACK_GENRES = [
   { id: 28, name: "Action" },
@@ -32,7 +34,23 @@ const FALLBACK_GENRES = [
 type SortKey = "popularity.desc" | "vote_average.desc" | "primary_release_date.desc";
 
 export default function Search() {
-  const { toggle, isWished } = useWishlist();
+  const [user, setUser] = useState<User | null>(null);
+  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
+  const isWished = (movieId: number) => wishlistItems.some((x) => x.movieId === movieId);
+
+  useEffect(() => {
+    const unsub = listenAuth(setUser);
+    return unsub;
+  }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setWishlistItems([]);
+      return;
+    }
+    const unsub = listenWishlist(user.uid, setWishlistItems);
+    return unsub;
+  }, [user]);
 
   const [loading, setLoading] = useState(false);
   const [genres, setGenres] = useState<Genre[]>([]);
@@ -44,22 +62,16 @@ export default function Search() {
   const [sort, setSort] = useState<SortKey>("popularity.desc");
 
   useEffect(() => {
-  (async () => {
-    try {
-      const gs = await fetchGenres();
-
-      // nếu TMDB trả về rỗng thì dùng fallback luôn
-      if (!gs || gs.length === 0) {
+    (async () => {
+      try {
+        const gs = await fetchGenres();
+        if (!gs || gs.length === 0) setGenres(FALLBACK_GENRES);
+        else setGenres(gs);
+      } catch (e) {
         setGenres(FALLBACK_GENRES);
-      } else {
-        setGenres(gs);
       }
-    } catch (e) {
-      // TMDB lỗi -> dùng fallback để dropdown có nhiều lựa chọn
-      setGenres(FALLBACK_GENRES);
-    }
-  })();
-}, []);
+    })();
+  }, []);
 
   const onReset = () => {
     setQuery("");
@@ -72,23 +84,19 @@ export default function Search() {
   const runSearch = async () => {
     setLoading(true);
     try {
-      // 1) query가 있으면 search API
       if (query.trim()) {
         const data = await searchMovies(query.trim(), 1);
-        // rating filter + sort는 client-side로 처리
         const filtered = data.results
           .filter((m) => (typeof m.vote_average === "number" ? m.vote_average >= minRating : true))
           .sort((a, b) => {
             if (sort === "vote_average.desc") return (b.vote_average ?? 0) - (a.vote_average ?? 0);
-            if (sort === "primary_release_date.desc")
-              return (b.release_date ?? "").localeCompare(a.release_date ?? "");
-            return 0; // popularity는 search 응답 기본 정렬 신뢰
+            if (sort === "primary_release_date.desc") return (b.release_date ?? "").localeCompare(a.release_date ?? "");
+            return 0;
           });
         setMovies(filtered);
         return;
       }
 
-      // 2) query 없으면 discover로 필터 (genre + sort + rating)
       const params: any = { page: 1, sort_by: sort, "vote_average.gte": minRating };
       if (genre !== "all") params.with_genres = genre;
       const data = await discoverMovies(params);
@@ -112,6 +120,10 @@ export default function Search() {
           Genre: {selectedGenreName} / Min Rating: {minRating} / Sort: {sort}
         </p>
 
+        {!user ? (
+          <p style={{ opacity: 0.8, marginTop: 10 }}>※ 위시리스트 토글은 로그인 후 가능합니다. (/signin)</p>
+        ) : null}
+
         <div style={panel}>
           <input
             style={input}
@@ -120,7 +132,11 @@ export default function Search() {
             placeholder="검색어 입력 (없으면 discover 필터)"
           />
 
-          <select style={input} value={genre} onChange={(e) => setGenre(e.target.value === "all" ? "all" : Number(e.target.value))}>
+          <select
+            style={input}
+            value={genre}
+            onChange={(e) => setGenre(e.target.value === "all" ? "all" : Number(e.target.value))}
+          >
             <option value="all">All Genres</option>
             {genres.map((g) => (
               <option value={g.id} key={g.id}>
@@ -159,7 +175,7 @@ export default function Search() {
 
         <div style={grid}>
           {movies.map((m) => (
-            <MovieCard key={m.id} movie={m} wished={isWished(m.id)} onToggle={toggle} />
+            <MovieCard key={m.id} movie={m} wished={isWished(m.id)} />
           ))}
         </div>
       </main>

@@ -1,13 +1,27 @@
 import "./Header.css";
 import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import type { User } from "firebase/auth";
+import { listenAuth, firebaseLogout } from "../../firebase/auth";
 
 export default function Header() {
   const navigate = useNavigate();
-  const currentUser = localStorage.getItem("currentUser") || "";
+  const [user, setUser] = useState<User | null>(null);
 
-  const onLogout = () => {
+  useEffect(() => {
+    const unsub = listenAuth(setUser);
+    return unsub;
+  }, []);
+
+  const onLogout = async () => {
+    await firebaseLogout();
+
+    // ✅ dọn các key localStorage cũ (để khỏi hiện user test)
     localStorage.removeItem("currentUser");
     localStorage.removeItem("keepLogin");
+    localStorage.removeItem("users");
+    localStorage.removeItem("movieWishlist");
+
     navigate("/signin");
   };
 
@@ -35,8 +49,8 @@ export default function Header() {
         </nav>
 
         <div className="right">
-          {currentUser ? <span className="user">{currentUser}</span> : null}
-          {currentUser ? (
+          {user ? <span className="user">{user.displayName || user.email}</span> : null}
+          {user ? (
             <button className="btn" onClick={onLogout}>
               Logout
             </button>
@@ -47,11 +61,17 @@ export default function Header() {
   );
 }
 
-// scroll opacity effect (demo 스타일 느낌)
-window.addEventListener("scroll", () => {
-  const header = document.getElementById("appHeader");
-  if (!header) return;
-  const y = window.scrollY;
-  header.style.background = y > 10 ? "rgba(0,0,0,0.65)" : "rgba(0,0,0,0.25)";
-  header.style.backdropFilter = "blur(10px)";
-});
+/** scroll opacity effect (demo 스타일 느낌)
+ *  ✅ addEventListener는 한 번만 등록되도록 안전하게 처리
+ */
+let _headerScrollBound = false;
+if (!_headerScrollBound) {
+  _headerScrollBound = true;
+  window.addEventListener("scroll", () => {
+    const header = document.getElementById("appHeader");
+    if (!header) return;
+    const y = window.scrollY;
+    header.style.background = y > 10 ? "rgba(0,0,0,0.65)" : "rgba(0,0,0,0.25)";
+    header.style.backdropFilter = "blur(10px)";
+  });
+}

@@ -1,12 +1,24 @@
+import { useEffect } from "react";
+import { listenAuth } from "../firebase/auth";
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import { useAuth } from "../hooks/useAuth";
+import { googleSignIn } from "../firebase/auth"; // ✅ A5
 import "./SignIn.netflix.css";
 import "./SignIn.upgrade.css"; // nếu bạn có file upgrade
 
 export default function SignIn() {
   const nav = useNavigate();
+
+  useEffect(() => {
+  const unsub = listenAuth((u) => {
+    if (u) nav("/", { replace: true });
+  });
+  return unsub;
+}, [nav]);
+
   const { login, register, savedEmail } = useAuth();
 
   // false = SignIn, true = SignUp
@@ -37,10 +49,28 @@ export default function SignIn() {
     if (!res.ok) return toast.error(res.msg);
 
     toast.success("회원가입 성공! 로그인 해주세요.");
-    // 요구사항: 회원가입 성공 시 로그인 화면으로
     setRightActive(false);
     setEmail(rEmail);
     setPw("");
+  };
+
+  // ✅ A5: Google login handler
+  const onGoogleLogin = async () => {
+    try {
+      await googleSignIn();
+      toast.success("Google 로그인 성공!");
+      nav("/", { replace: true });
+    } catch (e: any) {
+      const msg: string = e?.code || e?.message || "Google login failed";
+      // popup blocked / closed 같은 흔한 케이스 처리
+      if (String(msg).includes("auth/popup-blocked")) {
+        toast.error("브라우저가 팝업을 차단했습니다. 팝업 허용 후 다시 시도하세요.");
+      } else if (String(msg).includes("auth/popup-closed-by-user")) {
+        toast.error("로그인이 취소되었습니다.");
+      } else {
+        toast.error(typeof e?.message === "string" ? e.message : "Google login failed");
+      }
+    }
   };
 
   return (
@@ -93,6 +123,11 @@ export default function SignIn() {
               <button type="button" className="primary" onClick={onLogin}>
                 Sign In
               </button>
+
+              {/* ✅ Google button */}
+              <button type="button" className="primary" onClick={onGoogleLogin} style={{ marginTop: 10 }}>
+                Continue with Google
+              </button>
             </form>
           </div>
 
@@ -139,6 +174,11 @@ export default function SignIn() {
 
                   <button type="button" className="primary" onClick={onLogin}>
                     Sign In
+                  </button>
+
+                  {/* ✅ Google button on mobile */}
+                  <button type="button" className="primary" onClick={onGoogleLogin} style={{ marginTop: 10 }}>
+                    Continue with Google
                   </button>
 
                   <div className="mobile-switch">

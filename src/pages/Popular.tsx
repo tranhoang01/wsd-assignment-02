@@ -5,13 +5,32 @@ import Loading from "../components/Loading/Loading";
 import MovieCard from "../components/MovieCard/MovieCard";
 import { fetchMovies, tmdbEndpoints } from "../api/tmdb";
 import type { Movie } from "../types/movie";
-import { useWishlist } from "../hooks/useWishlist";
+import type { User } from "firebase/auth";
+import { listenAuth } from "../firebase/auth";
+import { listenWishlist, type WishlistItem } from "../firebase/wishlist";
 
 type ViewMode = "table" | "infinite";
 
 export default function Popular() {
-  const { toggle, isWished } = useWishlist();
-  const [mode, setMode] = useState<ViewMode>("table");
+  const [user, setUser] = useState<User | null>(null);
+  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
+  const isWished = (movieId: number) => wishlistItems.some((x) => x.movieId === movieId);
+
+  useEffect(() => {
+    const unsub = listenAuth(setUser);
+    return unsub;
+  }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setWishlistItems([]);
+      return;
+    }
+    const unsub = listenWishlist(user.uid, setWishlistItems);
+    return unsub;
+  }, [user]);
+
+  const [mode, setMode] = useState<ViewMode>("infinite"); // ✅ default infinite để “có scroll” ngay
 
   // table
   const [page, setPage] = useState(1);
@@ -26,10 +45,17 @@ export default function Popular() {
 
   const canScroll = useMemo(() => mode === "infinite", [mode]);
 
+  // ✅ Scroll rule:
+  // - table: page scroll LOCK (body/html hidden) + pagination sticky (nên vẫn dùng được)
+  // - infinite: page scroll ON
   useEffect(() => {
-    document.body.style.overflow = canScroll ? "auto" : "hidden"; // 요구: table view에서 scroll 불가
+    const overflow = canScroll ? "auto" : "hidden";
+    document.body.style.overflow = overflow;
+    document.documentElement.style.overflow = overflow;
+
     return () => {
       document.body.style.overflow = "auto";
+      document.documentElement.style.overflow = "auto";
     };
   }, [canScroll]);
 
@@ -106,20 +132,24 @@ export default function Popular() {
           </div>
         </div>
 
+        {!user ? <p style={{ opacity: 0.8, marginTop: 10 }}>※ 위시리스트 토글은 로그인 후 가능합니다. (/signin)</p> : null}
+
         {mode === "table" ? (
           <>
             {tableLoading ? <Loading label="Table 데이터 로딩 중..." /> : null}
+
             <div style={tableGrid}>
               {tableMovies.map((m) => (
-                <MovieCard key={m.id} movie={m} wished={isWished(m.id)} onToggle={toggle} />
+                <MovieCard key={m.id} movie={m} wished={isWished(m.id)} />
               ))}
             </div>
 
-            <div style={{ display: "flex", justifyContent: "center", gap: 10, marginTop: 16 }}>
+            {/* ✅ Sticky pagination: scroll 없어도 항상 보임 */}
+            <div style={pagerSticky}>
               <button style={btn2} onClick={() => setPage((p) => Math.max(1, p - 1))}>
                 Prev
               </button>
-              <div style={{ paddingTop: 8, opacity: 0.85 }}>Page {page}</div>
+              <div style={{ paddingTop: 8, opacity: 0.9 }}>Page {page}</div>
               <button style={btn2} onClick={() => setPage((p) => p + 1)}>
                 Next
               </button>
@@ -129,7 +159,7 @@ export default function Popular() {
           <>
             <div style={grid}>
               {infMovies.map((m) => (
-                <MovieCard key={`${m.id}-${m.release_date}`} movie={m} wished={isWished(m.id)} onToggle={toggle} />
+                <MovieCard key={`${m.id}-${m.release_date}`} movie={m} wished={isWished(m.id)} />
               ))}
             </div>
 
@@ -147,7 +177,7 @@ export default function Popular() {
 }
 
 const pageWrap: React.CSSProperties = { minHeight: "100vh", background: "#0b0b10", color: "white" };
-const main: React.CSSProperties = { maxWidth: 1100, margin: "0 auto", padding: "14px 14px 60px" };
+const main: React.CSSProperties = { maxWidth: 1100, margin: "0 auto", padding: "14px 14px 80px" };
 
 const grid: React.CSSProperties = {
   marginTop: 14,
@@ -161,6 +191,22 @@ const tableGrid: React.CSSProperties = {
   display: "grid",
   gridTemplateColumns: "repeat(6, 1fr)",
   gap: 10,
+};
+
+const pagerSticky: React.CSSProperties = {
+  position: "fixed",
+  left: "50%",
+  transform: "translateX(-50%)",
+  bottom: 14,
+  display: "flex",
+  justifyContent: "center",
+  gap: 10,
+  padding: "10px 12px",
+  borderRadius: 16,
+  border: "1px solid rgba(255,255,255,0.14)",
+  background: "rgba(0,0,0,0.65)",
+  backdropFilter: "blur(10px)",
+  zIndex: 50,
 };
 
 const btn = (active: boolean): React.CSSProperties => ({
@@ -193,5 +239,3 @@ const topBtn: React.CSSProperties = {
   color: "white",
   cursor: "pointer",
 };
-
-
